@@ -172,6 +172,9 @@ python ablation.py --dataset tiny-imagenet --mem-size 2000 --seeds 0,1,2 --gpu 2
 
 # optional top_k_patches sensitivity sweep at full alpha/lambda
 python ablation.py --dataset cifar100 --mem-size 2000 --seeds 0,1 --topk-sweep 5,10,20
+
+# optional percentile sweep
+python ablation.py --dataset tiny-imagenet --mem-size 2000 --seeds 0 --percentile-sweep 80,85,90
 ```
 
 It prints a mean ± std table per config (over seeds) and the per-component

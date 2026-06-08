@@ -49,6 +49,10 @@ Examples
     # add a top-k patch sensitivity sweep at full alpha/lambda:
     python ablation.py --dataset cifar100 --mem-size 2000 \
         --seeds 0,1 --topk-sweep 5,10,20
+
+    # add a percentile-based patch sensitivity sweep at full alpha/lambda:
+    python ablation.py --dataset tiny-imagenet --mem-size 2000 \
+        --seeds 0 --percentile-sweep 80,85,90,95
 """
 import argparse
 import csv
@@ -89,6 +93,10 @@ def build_grid(opt):
         for k in [int(x) for x in opt.topk_sweep.split(',')]:
             grid.append(dict(name='hcdr_full_top{}'.format(k), method='hcdr',
                              alpha=A, lam=L, top_k=k))
+    if getattr(opt, 'percentile_sweep', None):
+        for p_val in [float(x) for x in opt.percentile_sweep.split(',')]:
+            grid.append(dict(name='hcdr_full_perc{}'.format(p_val), method='hcdr',
+                             alpha=A, lam=L, perc=p_val))
     return grid
 
 
@@ -261,6 +269,8 @@ def main():
                    help='comma-separated subset of config names to run')
     p.add_argument('--topk-sweep', default=None,
                    help='comma-separated top_k_patches values to add at full alpha/lambda')
+    p.add_argument('--percentile-sweep', default=None,
+                   help='comma-separated percentile values to add')
     p.add_argument('--gpu', default=None, help='value for CUDA_VISIBLE_DEVICES')
     p.add_argument('--extra-train', default=None,
                    help='extra args forwarded verbatim to train.py, e.g. "--no_compile"')

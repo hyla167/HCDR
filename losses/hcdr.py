@@ -6,10 +6,8 @@ objective with two terms:
 * ``L_patch_NCE`` (weight ``alpha_patch``) - patch-level InfoNCE that contrasts
   projected patch tokens against per-class patch prototypes.
 * ``L_H_PRD``     (weight ``lambda_hprd``) - hierarchical PRD that distils each
-  patch's softmax distribution over the *global* class prototypes between the
+  patch's softmax distribution over the global class prototypes between the
   frozen past model and the current model.
-
-Full objective: ``L = L_global_NCE + alpha_patch * L_patch_NCE + lambda_hprd * L_H_PRD``.
 """
 import torch
 import torch.nn as nn
@@ -156,7 +154,7 @@ def update_patch_buffer(patch_buffer, model, replay_indices, val_targets,
                                         dtype=torch.long, device=device)
             feat, _, _, patch_feat, _ = model(images, return_spatial=True)
             top_k_pos, _ = compute_discriminative_patch_scores(
-                patch_feat, proto_w, batch_labels, top_k=opt.top_k_patches)
+                patch_feat, proto_w, batch_labels, top_k=opt.top_k_patches, percentile=opt.percentile)
             patch_buffer.update(batch_idx, feat, top_k_pos)
     if was_training:
         model.train()

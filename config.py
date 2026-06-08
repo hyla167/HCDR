@@ -8,10 +8,7 @@ _DATASETS = ['cifar10', 'tiny-imagenet', 'cifar100', 'stl10', 'caltech256', 'pat
 # Final task index used by the linear-probe evaluation (= n_cls/cls_per_task - 1)
 _EVAL_TARGET_TASK = {'cifar10': 4, 'tiny-imagenet': 9, 'cifar100': 4, 'stl10': 4, 'caltech256': 15}
 
-
-# --------------------------------------------------------------------------- #
-# Training                                                                     #
-# --------------------------------------------------------------------------- #
+# Training
 def parse_train_option():
     p = argparse.ArgumentParser('HCDR / CCLIS training')
 
@@ -78,6 +75,8 @@ def parse_train_option():
     p.add_argument('--lambda_hprd', type=float, default=0.6, help='weight of hierarchical PRD')
     p.add_argument('--top_k_patches', type=int, default=10,
                    help='discriminative patches stored per buffer image')
+    p.add_argument('--percentile', type=float, default=90.0,
+                   help='percentile for discriminative patch scoring')
 
     opt = p.parse_args()
     opt.use_hcdr = (opt.method == 'hcdr')
@@ -120,8 +119,8 @@ def _finalize_train_paths(opt):
 
     tag = ''
     if opt.use_hcdr:
-        tag = '_hcdr_alpha{}_lamd{}_top{}patches'.format(
-            opt.alpha_patch, opt.lambda_hprd, opt.top_k_patches)
+        tag = '_hcdr_alpha{}_lamd{}_top{}patches_perc{}'.format(
+            opt.alpha_patch, opt.lambda_hprd, opt.top_k_patches, opt.percentile)
     opt.model_name = (
         '{ds}_{sz}_{model}{tag}_lr_{lr}_{lrp}_decay_{wd}_bsz_{bsz}_temp_{temp}_trial_{trial}'
         '_{se}_{ep}_{ct}_{pt}_{dp}_distill_type_{dt}_freeze_prototypes_niters_{fpn}_seed_{seed}'
@@ -158,10 +157,7 @@ def _finalize_train_paths(opt):
     opt.save_folder = os.path.join(opt.model_path, opt.model_name)
     opt.log_folder = os.path.join(opt.log_path, opt.model_name)
 
-
-# --------------------------------------------------------------------------- #
-# Linear-probe evaluation                                                      #
-# --------------------------------------------------------------------------- #
+# Linear-probe evaluation
 def parse_eval_option():
     p = argparse.ArgumentParser('Linear-probe evaluation')
 
