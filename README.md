@@ -110,34 +110,6 @@ two methods are still distinguishable under a shared save root.
 
 `--method cclis` ignores all three (the patch heads are never built).
 
-## Behavioural notes / fixes vs. the original scripts
-
-The refactor preserves the algorithms exactly, with a few deliberate
-corrections that are applied identically to both methods (so any CCLIS-vs-HCDR
-comparison stays fair):
-
-1. **Optimizer built before `torch.compile`.** The originals called the
-   optimizer setup *after* compiling; the resulting `_orig_mod.` prefix on the
-   state-dict keys broke the exact-match check that creates the per-group
-   prototype learning rate, silently collapsing everything to one param group
-   and one LR. The optimizer is now constructed on the uncompiled model so the
-   prototype LR (and the HCDR patch-head/patch-prototype groups) take effect.
-   Pass `--legacy_optimizer` to reproduce the old single-group behaviour.
-2. **`torch.compile` is optional** via `--no_compile`.
-3. **Checkpoint loading in evaluation uses `strict=False`** and strips both
-   `_orig_mod.` (compile) and `module.` (DataParallel) prefixes. HCDR
-   checkpoints carry patch-head / patch-prototype tensors the probe doesn't
-   use; these are reported and ignored, while the encoder/head/prototypes load
-   normally.
-4. **AMP precision is chosen at runtime:** bf16 autocast when the GPU supports
-   it (no `GradScaler` needed), otherwise fp16 + a single shared `GradScaler`.
-5. **Contrastive logits use float32** consistently (`LOGITS_DTYPE` in
-   `losses/supcon.py`). The original CCLIS used float64 and HCDR float32.
-6. **`path` dataset std fix:** the original computed the normalization std from
-   `opt.mean`; it now correctly uses `opt.std`.
-7. **`channels_last` memory format** is applied to the model and inputs;
-   unused imports (e.g. `scipy`) were removed.
-
 ## Ablation study
 
 `ablation.py` orchestrates `train.py` + `evaluate.py` over a small grid to
