@@ -46,11 +46,6 @@ HCDR/
     └── util.py         # meters, LR schedules, optimizer, checkpoint I/O, sampler
 ```
 
-The four original monolithic scripts (`cclis.py`, `hcdr.py`, `eval_cclis.py`,
-`eval_hcdr.py`) are collapsed into this package. CCLIS is simply HCDR with the
-patch terms disabled, so a single `train.py` covers both via `--method`; and
-since the two eval scripts were identical, there is one `evaluate.py`.
-
 ## Installation
 
 ```bash
